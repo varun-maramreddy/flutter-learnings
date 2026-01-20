@@ -1,0 +1,150 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_learnings/firebase_options.dart';
+import 'package:flutter_learnings/utils/show_error_snackbar.dart';
+
+class LoginView extends StatefulWidget {
+  const LoginView({super.key});
+
+  @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+
+  late final TextEditingController _email;
+  late final TextEditingController _password;
+
+  @override
+  void initState() {
+    _email = TextEditingController();
+    _password = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    super.dispose();
+  } 
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar:  AppBar(
+        title: const Text('Login'),
+        backgroundColor: Colors.green[300],
+      ),
+      backgroundColor: Color.fromARGB(255, 250, 247, 240),
+      body: FutureBuilder(
+        future: Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        ).then((value) => ("Firebase Initialized...")),
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.done:
+              return Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: _email,
+                        decoration: InputDecoration(
+                          hintText: 'Enter your email',
+                          prefixIcon: const Icon(Icons.email_outlined),
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _password,
+                        decoration: InputDecoration(
+                          hintText: 'Enter your password',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        obscureText: true,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                      ),
+                      const SizedBox(height: 24),
+                      TextButton(
+                        onPressed: () async {
+                          print("Button Pressed");
+
+                          final email = _email.text;
+                          final password = _password.text;
+
+                          try {
+                            final userCredential = await FirebaseAuth.instance
+                                .signInWithEmailAndPassword(
+                                  email: email,
+                                  password: password,
+                                );
+                            print("User Logged In: $userCredential");
+                          } on FirebaseAuthException catch (e) {
+                            print("Error Code: ${e.code}");
+                            if(e.code == 'user-not-found') {
+                              showErrorSnackBar(context, 'User not found');
+                              print("User not found");
+                            } else if (e.code == 'wrong-password') {
+                              showErrorSnackBar(context, 'Wrong password provided');
+                              print("Wrong password provided");
+                            } else {
+                              showErrorSnackBar(context, 'Authentication error: ${e.message}');
+                              print('FirebaseAuthException: $e');
+                            }
+                          } catch(e) {
+                            showErrorSnackBar(context, 'Something went wrong: $e');
+                            print('Something went wrong: $e');
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade400,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Login',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            default: 
+              return const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('Loading...')
+                    ],
+                  ),
+                );
+          }
+        },
+      ),
+    );
+  }
+}

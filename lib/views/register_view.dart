@@ -36,132 +36,117 @@ class _RegisterViewState extends State<RegisterView> {
         title: const Text('Register'),
         backgroundColor: Colors.green[300],
       ),
-      backgroundColor: Color.fromARGB(255, 250, 247, 240),
-      body: FutureBuilder(
-        future: Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        ).then((value) => ("Firebase Initialized...")),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              return Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        controller: _email,
-                        decoration: InputDecoration(
-                          hintText: 'Enter your email',
-                          prefixIcon: const Icon(Icons.email_outlined),
-                          filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _password,
-                        decoration: InputDecoration(
-                          hintText: 'Enter your password',
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        obscureText: true,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                      ),
-                      const SizedBox(height: 24),
-                      TextButton(
-                        onPressed: () async {
-                          print("Button Pressed");
-
-                          final email = _email.text;
-                          final password = _password.text;
-
-                          try {
-                            final userCredential = await FirebaseAuth.instance
-                                .createUserWithEmailAndPassword(
-                                  email: email,
-                                  password: password,
-                                );
-                            print("User Created: $userCredential");
-                          } on FirebaseAuthException catch (e) {
-                            if (e.code == 'weak-password') {
-                              showErrorSnackBar(
-                                context,
-                                'The password provided is too weak.',
-                              );
-                              print('The password provided is too weak.');
-                            } else if (e.code == 'email-already-in-use') {
-                              showErrorSnackBar(
-                                context,
-                                'The account already exists for that email.',
-                              );
-                              print(
-                                'The account already exists for that email.',
-                              );
-                            } else if (e.code == 'invalid-email') {
-                              showErrorSnackBar(
-                                context,
-                                'The email address is not valid.',
-                              );
-                              print('The email address is not valid.');
-                            } else {
-                              showErrorSnackBar(
-                                context,
-                                'Registration error: ${e.message}',
-                              );
-                              print('FirebaseAuthException: $e');
-                            }
-                          } catch (e) {
-                            showErrorSnackBar(
-                              context,
-                              'Something went wrong: $e',
-                            );
-                            print('Something went wrong: $e');
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade400,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Register',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ],
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _email,
+                decoration: InputDecoration(
+                  hintText: 'Enter your email',
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
                 ),
-              );
-            default:
-              return const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Loading...'),
-                  ],
+                keyboardType: TextInputType.emailAddress,
+                enableSuggestions: false,
+                autocorrect: false,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _password,
+                decoration: InputDecoration(
+                  hintText: 'Enter your password',
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
-              );
-          }
-        },
+                obscureText: true,
+                enableSuggestions: false,
+                autocorrect: false,
+              ),
+              const SizedBox(height: 24),
+              TextButton(
+                onPressed: () async {
+                  print("Button Pressed");
+      
+                  final email = _email.text;
+                  final password = _password.text;
+      
+                  try {
+                    final userCredential = await FirebaseAuth.instance
+                        .createUserWithEmailAndPassword(
+                          email: email,
+                          password: password,
+                        );
+                    print("User Created: $userCredential");
+                    Navigator.of(context).pushNamedAndRemoveUntil('/verify-email/', (route) => false);
+                  } on FirebaseAuthException catch (e) {
+                    if (e.code == 'weak-password') {
+                      showErrorSnackBar(
+                        context,
+                        'The password provided is too weak.',
+                      );
+                      print('The password provided is too weak.');
+                    } else if (e.code == 'email-already-in-use') {
+                      showErrorSnackBar(
+                        context,
+                        'The account already exists for that email.',
+                      );
+                      print('The account already exists for that email.');
+                    } else if (e.code == 'invalid-email') {
+                      showErrorSnackBar(
+                        context,
+                        'The email address is not valid.',
+                      );
+                      print('The email address is not valid.');
+                    } else {
+                      showErrorSnackBar(
+                        context,
+                        'Registration error: ${e.message}',
+                      );
+                      print('FirebaseAuthException: $e');
+                    }
+                  } catch (e) {
+                    showErrorSnackBar(context, 'Something went wrong: $e');
+                    print('Something went wrong: $e');
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade400,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Register', style: TextStyle(fontSize: 16)),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pushNamedAndRemoveUntil('/login/', (route) => false);
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero, // removes button padding
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text(
+                  'Already registered? Login here!',
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

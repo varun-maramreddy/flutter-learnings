@@ -1,8 +1,6 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_learnings/constants/routes.dart';
-import 'package:flutter_learnings/firebase_options.dart';
 import 'package:flutter_learnings/utils/show_error_snackbar.dart';
 
 class LoginView extends StatefulWidget {
@@ -105,7 +103,7 @@ class _LoginViewState extends State<LoginView> {
                     } else {
                       showErrorSnackBar(
                         context,
-                        'Authentication error: ${e.message}',
+                        'Authentication error: ${e.code}',
                       );
                       print('FirebaseAuthException: $e');
                     }

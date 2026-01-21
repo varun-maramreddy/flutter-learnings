@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,7 +54,6 @@ class HomePage extends StatelessWidget {
               print("You need to verify your email first");
               return const VerifyEmailView();
             }
-            return Center(child: Text("Firebase Initialized Successfully!"));
           default:
             return Scaffold(
               body: const Center(

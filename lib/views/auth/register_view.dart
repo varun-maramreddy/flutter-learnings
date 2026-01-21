@@ -1,8 +1,6 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_learnings/constants/routes.dart';
-import 'package:flutter_learnings/firebase_options.dart';
 import 'package:flutter_learnings/utils/show_error_snackbar.dart';
 
 class RegisterView extends StatefulWidget {
@@ -117,7 +115,7 @@ class _RegisterViewState extends State<RegisterView> {
                     } else {
                       showErrorSnackBar(
                         context,
-                        'Registration error: ${e.message}',
+                        'Registration error: ${e.code}',
                       );
                       print('FirebaseAuthException: $e');
                     }

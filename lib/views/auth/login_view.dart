@@ -1,17 +1,18 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_learnings/constants/routes.dart';
 import 'package:flutter_learnings/firebase_options.dart';
 import 'package:flutter_learnings/utils/show_error_snackbar.dart';
 
-class RegisterView extends StatefulWidget {
-  const RegisterView({super.key});
+class LoginView extends StatefulWidget {
+  const LoginView({super.key});
 
   @override
-  State<RegisterView> createState() => _RegisterViewState();
+  State<LoginView> createState() => _LoginViewState();
 }
 
-class _RegisterViewState extends State<RegisterView> {
+class _LoginViewState extends State<LoginView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
 
@@ -33,7 +34,7 @@ class _RegisterViewState extends State<RegisterView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register'),
+        title: const Text('Login'),
         backgroundColor: Colors.green[300],
       ),
       body: Padding(
@@ -79,41 +80,32 @@ class _RegisterViewState extends State<RegisterView> {
               TextButton(
                 onPressed: () async {
                   print("Button Pressed");
-      
+
                   final email = _email.text;
                   final password = _password.text;
-      
+
                   try {
                     final userCredential = await FirebaseAuth.instance
-                        .createUserWithEmailAndPassword(
+                        .signInWithEmailAndPassword(
                           email: email,
                           password: password,
                         );
-                    print("User Created: $userCredential");
-                    Navigator.of(context).pushNamedAndRemoveUntil('/verify-email/', (route) => false);
+                    print("User Logged In: $userCredential");
+                    Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil(dashboardRoute, (route) => false);
                   } on FirebaseAuthException catch (e) {
-                    if (e.code == 'weak-password') {
-                      showErrorSnackBar(
-                        context,
-                        'The password provided is too weak.',
-                      );
-                      print('The password provided is too weak.');
-                    } else if (e.code == 'email-already-in-use') {
-                      showErrorSnackBar(
-                        context,
-                        'The account already exists for that email.',
-                      );
-                      print('The account already exists for that email.');
-                    } else if (e.code == 'invalid-email') {
-                      showErrorSnackBar(
-                        context,
-                        'The email address is not valid.',
-                      );
-                      print('The email address is not valid.');
+                    print("Error Code: ${e.code}");
+                    if (e.code == 'user-not-found') {
+                      showErrorSnackBar(context, 'User not found');
+                      print("User not found");
+                    } else if (e.code == 'wrong-password') {
+                      showErrorSnackBar(context, 'Wrong password provided');
+                      print("Wrong password provided");
                     } else {
                       showErrorSnackBar(
                         context,
-                        'Registration error: ${e.message}',
+                        'Authentication error: ${e.message}',
                       );
                       print('FirebaseAuthException: $e');
                     }
@@ -128,21 +120,21 @@ class _RegisterViewState extends State<RegisterView> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Register', style: TextStyle(fontSize: 16)),
+                child: const Text('Login', style: TextStyle(fontSize: 16)),
               ),
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamedAndRemoveUntil('/login/', (route) => false);
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil(registerRoute, (route) => false);
                 },
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero, // removes button padding
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: const Text(
-                  'Already registered? Login here!',
-                ),
+                child: const Text('Not registered yet? Register here!'),
               ),
             ],
           ),

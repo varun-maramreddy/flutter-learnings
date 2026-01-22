@@ -1,6 +1,8 @@
+import 'dart:developer' as devtools;
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_learnings/constants/routes.dart';
+import 'package:flutter_learnings/services/auth/auth_exceptions.dart';
+import 'package:flutter_learnings/services/auth/auth_service.dart';
 import 'package:flutter_learnings/utils/show_error_snackbar.dart';
 
 class RegisterView extends StatefulWidget {
@@ -83,42 +85,40 @@ class _RegisterViewState extends State<RegisterView> {
                   final password = _password.text;
 
                   try {
-                    final userCredential = await FirebaseAuth.instance
-                        .createUserWithEmailAndPassword(
-                          email: email,
-                          password: password,
-                        );
-                    print("User Created: $userCredential");
-                    Navigator.of(context).pushNamed(verifyEmailRoute);
-                  } on FirebaseAuthException catch (e) {
-                    if (e.code == 'weak-password') {
+                    final userCredential = await AuthService.firebase()
+                        .createUser(email: email, password: password);
+                    devtools.log("User Created: $userCredential");
+                    try {
+                      await AuthService.firebase().sendEmailVerification();
+                    } catch (e) {
                       showErrorSnackBar(
                         context,
-                        'The password provided is too weak.',
+                        'Error sending verification email: $e',
                       );
-                      print('The password provided is too weak.');
-                    } else if (e.code == 'email-already-in-use') {
-                      showErrorSnackBar(
-                        context,
-                        'The account already exists for that email.',
-                      );
-                      print('The account already exists for that email.');
-                    } else if (e.code == 'invalid-email') {
-                      showErrorSnackBar(
-                        context,
-                        'The email address is not valid.',
-                      );
-                      print('The email address is not valid.');
-                    } else {
-                      showErrorSnackBar(
-                        context,
-                        'Registration error: ${e.code}',
-                      );
-                      print('FirebaseAuthException: $e');
+                      debugPrint('Failed to send verification email: $e');
                     }
-                  } catch (e) {
-                    showErrorSnackBar(context, 'Something went wrong: $e');
-                    print('Something went wrong: $e');
+                    Navigator.of(context).pushNamed(verifyEmailRoute);
+                  } on WeakPasswordAuthException {
+                    showErrorSnackBar(
+                      context,
+                      'The password provided is too weak.',
+                    );
+                    devtools.log('The password provided is too weak.');
+                  } on EmailAlreadyInUseAuthException {
+                    showErrorSnackBar(
+                      context,
+                      'The account already exists for that email.',
+                    );
+                    devtools.log('The account already exists for that email.');
+                  } on InvalidEmailAuthException {
+                    showErrorSnackBar(
+                      context,
+                      'The email address is not valid.',
+                    );
+                    devtools.log('The email address is not valid.');
+                  } on GenericAuthException {
+                    showErrorSnackBar(context, 'Registration error occurred.');
+                    devtools.log('Registration error occurred.');
                   }
                 },
                 style: ElevatedButton.styleFrom(

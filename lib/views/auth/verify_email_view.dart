@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_learnings/constants/routes.dart';
-import 'package:flutter_learnings/utils/show_error_snackbar.dart';
 
 class VerifyEmailView extends StatefulWidget {
   const VerifyEmailView({super.key});
@@ -11,30 +9,6 @@ class VerifyEmailView extends StatefulWidget {
 }
 
 class _VerifyEmailViewState extends State<VerifyEmailView> {
-  @override
-  void initState() {
-    super.initState();
-    _sendVerificationEmail();
-  }
-
-  Future<void> _sendVerificationEmail() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null && !user.emailVerified) {
-      await user
-          .sendEmailVerification()
-          .then((_) {
-            print('Verification email sent to ${user.email}');
-          })
-          .catchError((error) {
-            showErrorSnackBar(
-              context,
-              'Error sending verification email: $error',
-            );
-            print('Failed to send verification email: $error');
-          });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

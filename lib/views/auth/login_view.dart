@@ -1,6 +1,8 @@
+import 'dart:developer' as devtools;
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_learnings/constants/routes.dart';
+import 'package:flutter_learnings/services/auth/auth_exceptions.dart';
+import 'package:flutter_learnings/services/auth/auth_service.dart';
 import 'package:flutter_learnings/utils/show_error_snackbar.dart';
 
 class LoginView extends StatefulWidget {
@@ -83,33 +85,34 @@ class _LoginViewState extends State<LoginView> {
                   final password = _password.text;
 
                   try {
-                    final userCredential = await FirebaseAuth.instance
-                        .signInWithEmailAndPassword(
-                          email: email,
-                          password: password,
-                        );
-                    print("User Logged In: $userCredential");
-                    Navigator.of(
-                      context,
-                    ).pushNamedAndRemoveUntil(dashboardRoute, (route) => false);
-                  } on FirebaseAuthException catch (e) {
-                    print("Error Code: ${e.code}");
-                    if (e.code == 'user-not-found') {
-                      showErrorSnackBar(context, 'User not found');
-                      print("User not found");
-                    } else if (e.code == 'wrong-password') {
-                      showErrorSnackBar(context, 'Wrong password provided');
-                      print("Wrong password provided");
-                    } else {
-                      showErrorSnackBar(
-                        context,
-                        'Authentication error: ${e.code}',
+                    final userCredential = await AuthService.firebase().logIn(
+                      email: email,
+                      password: password,
+                    );
+                    final user = AuthService.firebase().currentUser;
+                    if (user?.isEmailVerified ?? false) {
+                      devtools.log("Email is verified");
+                      devtools.log("User Logged In: $userCredential");
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        dashboardRoute,
+                        (route) => false,
                       );
-                      print('FirebaseAuthException: $e');
+                    } else {
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        verifyEmailRoute,
+                        (route) => false,
+                      );
+                      return;
                     }
-                  } catch (e) {
-                    showErrorSnackBar(context, 'Something went wrong: $e');
-                    print('Something went wrong: $e');
+                  } on UserNotFoundAuthException {
+                    showErrorSnackBar(context, 'User not found');
+                    devtools.log("User not found");
+                  } on WrongPasswordAuthException {
+                    showErrorSnackBar(context, 'Wrong password provided');
+                    devtools.log("Wrong password provided");
+                  } on GenericAuthException {
+                    showErrorSnackBar(context, 'Authentication error');
+                    devtools.log('Authentication error');
                   }
                 },
                 style: ElevatedButton.styleFrom(

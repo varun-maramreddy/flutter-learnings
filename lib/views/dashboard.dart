@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_learnings/constants/routes.dart';
+import 'package:flutter_learnings/enum/menu_action.dart';
+import 'package:flutter_learnings/services/auth/auth_exceptions.dart';
+import 'package:flutter_learnings/services/auth/auth_service.dart';
 import 'package:flutter_learnings/utils/show_error_snackbar.dart';
 import 'package:flutter_learnings/utils/show_logout_dialog.dart';
 import 'package:flutter_learnings/views/notes/notes.dart';
-
-enum MenuAction { logout }
 
 class Dashboard extends StatelessWidget {
   const Dashboard({super.key});
@@ -24,10 +24,12 @@ class Dashboard extends StatelessWidget {
                   final shouldLogout = await showLogOutDialog(context);
                   if (shouldLogout) {
                     try {
-                      await FirebaseAuth.instance.signOut();
+                      await AuthService.firebase().logOut();
                       Navigator.of(
                         context,
                       ).pushNamedAndRemoveUntil(loginRoute, (route) => false);
+                    } on UserNotFoundAuthException {
+                      showErrorSnackBar(context, 'User not found');
                     } catch (error) {
                       showErrorSnackBar(context, 'Error during logout: $error');
                     }
